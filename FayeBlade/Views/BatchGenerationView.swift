@@ -138,7 +138,7 @@ struct BatchGenerationView: View {
                             
                             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
                                 ForEach(viewModel.generatedImages, id: \.id) { image in
-                                    AsyncImage(url: URL(string: "data:image/jpeg;base64,\(Data(image.imageData).base64EncodedString())")) { phase in
+                                    AsyncImage(url: URL(string: "data:image/jpeg;base64,\(image.imageData.base64EncodedString())")) { phase in
                                         switch phase {
                                         case .success(let image):
                                             image
