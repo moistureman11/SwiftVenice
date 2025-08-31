@@ -11,7 +11,7 @@ struct ImageGenerationRequest: Codable {
     let style_preset: String?
     let safe: Bool  // CSAM filter - disabled for dev mode testing
     
-    init(model: String, prompt: String, negative_prompt: String? = nil, width: Int, height: Int, steps: Int, cfg_scale: Double, style_preset: String? = nil, safe: Bool = false) {
+    init(model: String, prompt: String, negative_prompt: String? = nil, width: Int, height: Int, steps: Int, cfg_scale: Double, style_preset: String? = nil, safe: Bool = true) {
         self.model = model
         self.prompt = prompt
         self.negative_prompt = negative_prompt
