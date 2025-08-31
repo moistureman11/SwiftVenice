@@ -72,7 +72,7 @@ struct PasswordEntryView: View {
             .alert("Authentication Failed", isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text(isPasswordConfigured ? "Incorrect password. Please try again." : "Developer mode password has not been configured. Please contact your administrator.")
+                Text("Authentication failed. Please contact your administrator.")
             }
         }
     }
