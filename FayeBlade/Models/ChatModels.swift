@@ -23,7 +23,7 @@ struct ChatRequest: Codable {
     let stream: Bool
     let safe: Bool  // CSAM filter - disabled for dev mode testing
     
-    init(model: String, messages: [ApiChatMessage], stream: Bool = false, safe: Bool = false) {
+    init(model: String, messages: [ApiChatMessage], stream: Bool = false, safe: Bool = true) {
         self.model = model
         self.messages = messages
         self.stream = stream
