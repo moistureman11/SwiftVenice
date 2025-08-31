@@ -54,6 +54,20 @@ struct SettingsView: View {
                             showingPasswordAlert = true
                         }
                     }
+                
+                if settings.isDevModeEnabled {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text("CSAM Filter Disabled")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                    
+                    Text("Dev mode is active for testing LORA models and content filters. Safe mode is disabled.")
+                        .font(.caption2)
+                        .foregroundColor(Theme.textSecondary)
+                }
             }
         }
         .foregroundColor(Theme.textPrimary)

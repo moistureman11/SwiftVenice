@@ -45,7 +45,8 @@ class ImageGenerationViewModel: ObservableObject {
             height: height,
             steps: Int(settings.variants),
             cfg_scale: settings.guidance,
-            style_preset: settings.style
+            style_preset: settings.style,
+            safe: settings.safeMode
         )
 
         networkManager.generateImage(request: request) { [weak self] result in

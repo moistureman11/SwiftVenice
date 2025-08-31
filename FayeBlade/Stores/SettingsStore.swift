@@ -16,4 +16,9 @@ class SettingsStore: ObservableObject {
 
     // Dev mode settings
     @Published var isDevModeEnabled: Bool = false
+    
+    // Safe mode - when dev mode is enabled, safe mode is disabled for CSAM filter testing
+    var safeMode: Bool {
+        return !isDevModeEnabled
+    }
 }

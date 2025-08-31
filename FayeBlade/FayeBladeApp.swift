@@ -7,6 +7,6 @@ struct FayeBladeApp: App {
         WindowGroup {
             LoginView()
         }
-        .modelContainer(for: [ChatMessage.self, GeneratedImage.self])
+        .modelContainer(for: [ChatMessage.self, GeneratedImage.self, PromptTemplate.self])
     }
 }

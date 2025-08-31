@@ -8,10 +8,12 @@ class ChatViewModel: ObservableObject {
     @Published var currentInput: String = ""
 
     private var modelContext: ModelContext
+    private var settings: SettingsStore
     private let networkManager = NetworkManager()
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, settings: SettingsStore) {
         self.modelContext = modelContext
+        self.settings = settings
         fetchMessages()
     }
 
@@ -32,7 +34,7 @@ class ChatViewModel: ObservableObject {
         messages.append(userMessage)
 
         let apiMessages = messages.map { ApiChatMessage(role: $0.role, content: $0.content) }
-        let request = ChatRequest(model: "venice-uncensored", messages: apiMessages)
+        let request = ChatRequest(model: "venice-uncensored", messages: apiMessages, safe: settings.safeMode)
 
         currentInput = ""
 
