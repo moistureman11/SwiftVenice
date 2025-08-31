@@ -1,6 +1,17 @@
 import Foundation
 import Combine
 
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
+@available(macOS 10.15, *)
 class SettingsStore: ObservableObject {
     @Published var numberOfImages: Int = 1
     @Published var isPhotoreal: Bool = false

@@ -15,6 +15,7 @@ struct Theme {
     }
 }
 
+@available(macOS 10.15, *)
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
