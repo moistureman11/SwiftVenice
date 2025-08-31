@@ -4,8 +4,8 @@ import SwiftData
 struct ChatView: View {
     @StateObject private var viewModel: ChatViewModel
 
-    init(modelContext: ModelContext) {
-        _viewModel = StateObject(wrappedValue: ChatViewModel(modelContext: modelContext))
+    init(modelContext: ModelContext, settings: SettingsStore) {
+        _viewModel = StateObject(wrappedValue: ChatViewModel(modelContext: modelContext, settings: settings))
     }
 
     var body: some View {

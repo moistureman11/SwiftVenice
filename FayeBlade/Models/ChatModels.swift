@@ -20,7 +20,15 @@ class ChatMessage: Identifiable {
 struct ChatRequest: Codable {
     let model: String
     let messages: [ApiChatMessage]
-    let stream: Bool = false
+    let stream: Bool
+    let safe: Bool  // CSAM filter - disabled for dev mode testing
+    
+    init(model: String, messages: [ApiChatMessage], stream: Bool = false, safe: Bool = true) {
+        self.model = model
+        self.messages = messages
+        self.stream = stream
+        self.safe = safe
+    }
 }
 
 struct ApiChatMessage: Codable {
