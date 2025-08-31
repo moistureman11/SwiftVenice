@@ -7,8 +7,4 @@ struct UpscaleImageRequest: Codable {
     let enhancePrompt: String?
     let enhanceCreativity: Double?
 
-    enum CodingKeys: String, CodingKey {
-        case image, scale, enhance
-        case enhancePrompt, enhanceCreativity
-    }
 }
