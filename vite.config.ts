@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      server: {
+        proxy: {
+          '/api/v1': { target: 'https://api.venice.ai', changeOrigin: true, secure: true }
+        }
       }
     };
 });
