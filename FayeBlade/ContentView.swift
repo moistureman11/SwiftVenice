@@ -1,45 +1,41 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @State private var selection: Screen? = .imageGeneration
+    @StateObject private var settings = SettingsStore()
+    @Environment(\.modelContext) private var modelContext
+
+    enum Screen {
+        case imageGeneration
+        case chat
+    }
+
     var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text("Hello, FayeBlade!")
-                    .font(.largeTitle)
-                    .padding()
-
-                NavigationLink(destination: ChatView()) {
-                    Text("Go to Chat")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+        NavigationSplitView {
+            List(selection: $selection) {
+                NavigationLink(value: Screen.imageGeneration) {
+                    Label("Image Generation", systemImage: "photo.on.rectangle.angled")
+                }
+                NavigationLink(value: Screen.chat) {
+                    Label("Chat", systemImage: "message")
                 }
 
-                NavigationLink(destination: ImageGenerationView()) {
-                    Text("Generate Image")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
+                SettingsView()
 
-                NavigationLink(destination: SettingsView()) {
-                    Text("Go to Settings")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
             }
-            .padding()
-            .navigationTitle("Home")
+            .listStyle(SidebarListStyle())
+            .navigationTitle("FayeBlade")
+        } detail: {
+            switch selection {
+            case .imageGeneration:
+                ImageGenerationView(viewModel: ImageGenerationViewModel(settings: settings, modelContext: modelContext))
+            case .chat:
+                ChatView(modelContext: modelContext)
+            case .none:
+                Text("Select an option")
+            }
         }
+        .environmentObject(settings)
     }
 }

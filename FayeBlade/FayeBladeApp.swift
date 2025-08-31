@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct FayeBladeApp: App {
@@ -6,5 +7,6 @@ struct FayeBladeApp: App {
         WindowGroup {
             LoginView()
         }
+        .modelContainer(for: [ChatMessage.self, GeneratedImage.self])
     }
 }

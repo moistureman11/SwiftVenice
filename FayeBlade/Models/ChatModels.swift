@@ -1,20 +1,31 @@
 import Foundation
+import SwiftData
 
+@Model
+class ChatMessage: Identifiable {
+    @Attribute(.unique) var id: UUID
+    var role: String
+    var content: String
+    var timestamp: Date
+
+    init(id: UUID = UUID(), role: String, content: String, timestamp: Date = Date()) {
+        self.id = id
+        self.role = role
+        self.content = content
+        self.timestamp = timestamp
+    }
+}
+
+// These structs are for API communication and do not need to be SwiftData models.
 struct ChatRequest: Codable {
     let model: String
-    let messages: [ChatMessage]
+    let messages: [ApiChatMessage]
     let stream: Bool = false
 }
 
-struct ChatMessage: Codable, Identifiable {
-    let id = UUID()
+struct ApiChatMessage: Codable {
     let role: String
     let content: String
-
-    // Custom coding keys to exclude 'id' from JSON encoding/decoding
-    enum CodingKeys: String, CodingKey {
-        case role, content
-    }
 }
 
 struct ChatResponse: Codable {
@@ -22,5 +33,5 @@ struct ChatResponse: Codable {
 }
 
 struct ChatChoice: Codable {
-    let message: ChatMessage
+    let message: ApiChatMessage
 }
