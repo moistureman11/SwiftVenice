@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faye Håkansdotter's AI Image Studio Powered by Venice.ai</title>
+    <meta name="description" content="A personalized, AI-powered image generation and enhancement platform with local storage.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="min-h-screen lg:overflow-hidden">
+    <div id="splash-screen" class="hidden fixed inset-0 z-[102] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div id="splash-card" class="glass rounded-2xl p-8 shadow-xl max-w-sm w-full text-center animate-fadeIn">
+            <h2 class="text-3xl font-bold font-['Libre_Baskerville',_serif] bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] bg-clip-text text-transparent mb-2">Welcome to AI Studio</h2>
+            <p class="text-gray-400 mb-6">Please enter your name to personalize your experience.</p>
+            <form id="splash-form">
+                <input type="text" id="username-input" class="w-full text-center bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition mb-4" placeholder="Your Name" required>
+                <button type="submit" class="w-full bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--background-color)] font-semibold py-3 px-6 rounded-xl transition transform hover:scale-[1.02] shadow-lg">Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+        <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+        <div id="progress-bar-container" class="fixed top-0 left-0 w-full h-1 bg-[var(--card-background)] z-[99] opacity-0 transition-opacity duration-300">
+            <div id="progress-bar" class="progress-bar h-full" style="transform: scaleX(0)"></div>
+        </div>
+
+        <div class="max-w-[90rem] mx-auto px-4 py-8 lg:h-screen lg:flex lg:flex-col">
+            <header class="text-center mb-6 animate-fadeIn lg:shrink-0" role="banner">
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <img src="https://1.gravatar.com/avatar/10c932de232ae6cb98c71e20fe9997a8af8aa5b30015391370724fee17404d5b?size=256" alt="Faye Håkansdotter's avatar" class="h-20 w-20 rounded-full object-cover shadow-2xl ring-2 ring-[var(--input-border)]" onerror="this.onerror=null;this.src='https://placehold.co/80x80/1a1a2e/f8f8f2?text=FH';">
+                    <div class="text-left">
+                        <h1 id="studio-title" class="text-4xl font-bold font-['Libre_Baskerville',_serif] bg-gradient-to-r from-[var(--primary-color)] to-[var(--secondary-color)] bg-clip-text text-transparent">Faye's AI Studio</h1>
+                        <p class="text-gray-400 mt-1 font-['Roboto_Mono',_monospace]">Red Team Division // NSA.gov</p>
+                    </div>
+                </div>
+                <div id="stats" class="mt-4 flex justify-center gap-6 text-sm text-gray-400 font-['Roboto_Mono',_monospace]">
+                    <div>Images: <span id="image-count" class="font-semibold text-gray-300">0</span></div>
+                    <div>Storage: <span id="storage-used" class="font-semibold text-gray-300">0 MB</span></div>
+                </div>
+            </header>
+
+            <div class="grid lg:grid-cols-10 gap-8 lg:flex-1 lg:overflow-hidden">
+                <aside class="lg:col-span-4 space-y-6 lg:overflow-y-auto">
+                    <!-- Chat Section -->
+                    <section class="glass rounded-2xl p-6 shadow-xl" aria-labelledby="chat-heading">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 id="chat-heading" class="text-xl font-semibold flex items-center gap-2 text-[var(--cyan-accent)] font-['Libre_Baskerville',_serif]">Chat with Venice</h2>
+                            <button id="summarize-btn" class="text-xs py-1 px-3 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition disabled:opacity-50 flex items-center gap-2" aria-label="Summarize chat history">Summarize</button>
+                        </div>
+                        
+                        <details class="group mb-4">
+                            <summary class="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition">
+                                <svg class="w-4 h-4 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Chat Settings
+                            </summary>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="chat-model" class="block text-sm font-medium text-gray-300 mb-2">Chat Model</label>
+                                    <select id="chat-model" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" disabled=""><option>Loading...</option></select>
+                                </div>
+                                <div>
+                                    <label for="system-prompt" class="block text-sm font-medium text-gray-300 mb-2">System Prompt</label>
+                                    <textarea id="system-prompt" rows="3" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition resize-none" placeholder="e.g., You are a helpful assistant."></textarea>
+                                </div>
+                            </div>
+                        </details>
+                        
+                        <details id="summary-container" class="hidden group mb-4">
+                            <summary class="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition">
+                                <svg class="w-4 h-4 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Chat Summary
+                            </summary>
+                            <div id="summary-content" class="mt-2 p-3 bg-[var(--input-background)] rounded-lg text-sm text-gray-300 whitespace-pre-wrap">
+                                <!-- Summary content will be injected here -->
+                            </div>
+                        </details>
+
+
+                        <div id="chat-container" class="chat-container min-h-[20rem] overflow-y-auto lg:overflow-visible pr-2 space-y-4 mb-4">
+                            <!-- Chat messages will be appended here -->
+                        </div>
+                        <form id="chat-form" class="flex gap-2">
+                            <input type="text" id="chat-input" class="flex-1 bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" placeholder="Ask anything..." required>
+                            <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--background-color)] rounded-lg transition" aria-label="Send message">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </button>
+                        </form>
+                    </section>
+
+                    <section class="glass rounded-2xl p-6 shadow-xl" aria-labelledby="controls-heading">
+                        <h2 id="controls-heading" class="text-xl font-semibold mb-6 flex items-center gap-2 text-[var(--cyan-accent)] font-['Libre_Baskerville',_serif]">Image Controls</h2>
+                        <form id="generation-form" class="space-y-4">
+                            <details class="group pt-2" open>
+                                <summary class="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition">
+                                    <svg class="w-4 h-4 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    Image Input (for Image-to-Image)
+                                </summary>
+                                <div class="mt-4 space-y-4">
+                                    <div id="image-input-area" class="relative w-full h-40 bg-[var(--input-background)] border-2 border-dashed border-[var(--input-border)] rounded-xl flex items-center justify-center text-center text-gray-400 cursor-pointer hover:border-[var(--primary-color)] transition">
+                                        <input type="file" id="image-upload-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/png, image/jpeg, image/webp">
+                                        <div id="image-input-placeholder" class="pointer-events-none">
+                                            <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V6a2 2 0 012-2h10a2 2 0 012 2v6a4 4 0 01-4 4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 16v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1"></path></svg>
+                                            <p>Drag & Drop or Click to Upload</p>
+                                            <p class="text-xs text-gray-500">PNG, JPG, WEBP</p>
+                                        </div>
+                                        <img id="image-input-preview" src="" alt="Input image preview" class="hidden absolute inset-0 w-full h-full object-contain p-2 rounded-xl">
+                                    </div>
+                                    <button type="button" id="clear-image-input-btn" class="hidden w-full text-xs py-1 px-3 bg-[var(--input-background)] hover:bg-red-600/30 text-red-400 rounded-lg transition">Clear Image</button>
+                                    <div>
+                                        <label id="creativity-label" for="enhance-creativity" class="flex justify-between text-sm font-medium text-gray-300 mb-2"><span>Creativity</span><span id="enhance-creativity-value" class="text-[var(--cyan-accent)]">0.15</span></label>
+                                        <input type="range" id="enhance-creativity" min="0" max="1" value="0.15" step="0.01" class="w-full" aria-labelledby="creativity-label">
+                                    </div>
+                                    <div>
+                                        <label id="replication-label" for="enhance-replication" class="flex justify-between text-sm font-medium text-gray-300 mb-2"><span>Replication</span><span id="enhance-replication-value" class="text-[var(--cyan-accent)]">0.35</span></label>
+                                        <input type="range" id="enhance-replication" min="0" max="1" value="0.35" step="0.01" class="w-full" aria-labelledby="replication-label">
+                                    </div>
+                                </div>
+                            </details>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label for="prompt" class="text-sm font-medium text-gray-300">Prompt</label>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="save-prompt-btn" class="p-1.5 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition" title="Save current prompt as template" aria-label="Save current prompt as template">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-3.13L5 18V4z"/></svg>
+                                        </button>
+                                        <div class="relative">
+                                            <button type="button" id="load-prompt-btn" class="p-1.5 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition" title="Load a saved prompt" aria-label="Load a saved prompt" aria-haspopup="true" aria-expanded="false">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                                            </button>
+                                            <div id="prompt-templates-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-[var(--card-background)] border border-[var(--input-border)] rounded-lg shadow-xl z-20">
+                                                <!-- Templates will be injected here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <textarea id="prompt" rows="3" maxlength="1500" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition resize-none" placeholder="Describe your image..." required aria-describedby="prompt-length"></textarea>
+                                <div class="mt-1 text-xs text-gray-500 text-right"><span id="prompt-length">0</span> / 1500</div>
+                            </div>
+                            
+                            <div>
+                                <label for="negative-preset-select" class="block text-sm font-medium text-gray-300 mb-2">Negative Preset</label>
+                                <select id="negative-preset-select" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition">
+                                    <option value="sfw">SFW / Quality</option>
+                                    <option value="human">Human Anatomy</option>
+                                    <option value="animal">Animal Anatomy</option>
+                                    <option value="nsfw">NSFW</option>
+                                    <option value="none">None</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="negative-prompt" class="sr-only">Negative Prompt Details</label>
+                                <textarea id="negative-prompt" rows="2" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition resize-none" placeholder="Unwanted elements to exclude..."></textarea>
+                            </div>
+
+                            <div id="aspect-ratio-wrapper">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+                                <div id="aspect-ratio-group" class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <input type="radio" name="aspect" id="aspect-square" value="square" class="sr-only" checked>
+                                        <label for="aspect-square" class="flex flex-col items-center justify-center p-2 border border-[var(--input-border)] rounded-lg cursor-pointer transition">
+                                            <div class="aspect-icon w-10 h-10 rounded-sm mb-1 transition-colors"></div>
+                                            <span class="text-xs">Square</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="aspect" id="aspect-wide" value="wide" class="sr-only">
+                                        <label for="aspect-wide" class="flex flex-col items-center justify-center p-2 border border-[var(--input-border)] rounded-lg cursor-pointer transition">
+                                            <div class="aspect-icon w-12 h-9 rounded-sm mb-1 transition-colors"></div>
+                                            <span class="text-xs">Wide</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="aspect" id="aspect-tall" value="tall" class="sr-only">
+                                        <label for="aspect-tall" class="flex flex-col items-center justify-center p-2 border border-[var(--input-border)] rounded-lg cursor-pointer transition">
+                                            <div class="aspect-icon w-9 h-12 rounded-sm mb-1 transition-colors"></div>
+                                            <span class="text-xs">Tall</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <details class="group pt-2">
+                                <summary class="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition">
+                                    <svg class="w-4 h-4 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    Advanced Settings
+                                </summary>
+                                <div class="mt-4 space-y-4">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="model" class="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                                            <select id="model" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" disabled><option>Loading...</option></select>
+                                        </div>
+                                        <div>
+                                            <label for="style" class="block text-sm font-medium text-gray-300 mb-2">Style</label>
+                                            <select id="style" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" disabled><option>Loading...</option></select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label id="cfg-scale-label" for="cfg-scale" class="flex justify-between text-sm font-medium text-gray-300 mb-2"><span>Guidance (CFG)</span><span id="cfg-scale-value" class="text-[var(--cyan-accent)]">7.5</span></label>
+                                        <input type="range" id="cfg-scale" min="1" max="20" value="7.5" step="0.5" class="w-full" aria-labelledby="cfg-scale-label">
+                                    </div>
+                                    <div>
+                                        <label id="steps-label" for="steps" class="flex justify-between text-sm font-medium text-gray-300 mb-2"><span>Steps</span><span id="steps-value" class="text-[var(--cyan-accent)]">30</span></label>
+                                        <input type="range" id="steps" min="10" max="50" value="30" step="1" class="w-full" aria-labelledby="steps-label">
+                                    </div>
+                                    <div>
+                                        <label id="variants-label" for="variants" class="flex justify-between text-sm font-medium text-gray-300 mb-2"><span>Variants</span><span id="variants-value" class="text-[var(--cyan-accent)]">1</span></label>
+                                        <input type="range" id="variants" min="1" max="4" value="1" class="w-full" aria-labelledby="variants-label">
+                                    </div>
+                                    <div>
+                                        <label for="seed" class="block text-sm font-medium text-gray-300 mb-2">Seed <button type="button" id="random-seed-btn" class="ml-2 text-xs text-[var(--primary-color)] hover:text-[var(--secondary-color)]" aria-label="Randomize seed">🎲 Random</button></label>
+                                        <input type="number" id="seed" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" placeholder="Leave empty for random">
+                                    </div>
+                                    <div class="space-y-2 pt-2">
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" id="hide-watermark" checked class="w-4 h-4 rounded border-[var(--input-border)] text-[var(--primary-color)] focus:ring-[var(--primary-color)] bg-[var(--input-background)]">
+                                            <span class="text-sm">Hide watermark</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" id="safe-mode" class="w-4 h-4 rounded border-[var(--input-border)] text-[var(--primary-color)] focus:ring-[var(--primary-color)] bg-[var(--input-background)]">
+                                            <span class="text-sm">Safe mode (blur NSFW)</span>
+                                        </label>
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" id="embed-exif" class="w-4 h-4 rounded border-[var(--input-border)] text-[var(--primary-color)] focus:ring-[var(--primary-color)] bg-[var(--input-background)]">
+                                            <span class="text-sm">Embed Metadata</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+                            <div class="flex gap-3 pt-4">
+                                <button type="submit" id="generate-btn" class="flex-1 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--background-color)] font-semibold py-3 px-6 rounded-xl transition transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Generate image">Generate</button>
+                                <button type="button" id="clear-btn" class="px-4 py-3 bg-[var(--input-background)] hover:bg-[var(--input-border)] text-gray-300 rounded-xl transition" aria-label="Clear form"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                            </div>
+                        </form>
+                    </section>
+                    <section class="glass rounded-2xl p-6 shadow-xl" aria-labelledby="actions-heading">
+                        <h3 id="actions-heading" class="text-lg font-semibold mb-4 text-[var(--cyan-accent)] font-['Libre_Baskerville',_serif]">Quick Actions</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="batch-download-btn" class="flex items-center justify-center gap-2 py-2 px-4 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition disabled:opacity-50" disabled aria-label="Download all images">Download All</button>
+                            <button id="clear-history-btn" class="flex items-center justify-center gap-2 py-2 px-4 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition disabled:opacity-50" disabled aria-label="Clear image history">Clear History</button>
+                            <button id="settings-btn" class="col-span-2 flex items-center justify-center gap-2 py-2 px-4 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition" aria-label="Open settings">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>Settings</span>
+                            </button>
+                        </div>
+                    </section>
+                </aside>
+
+                <main class="lg:col-span-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-hidden">
+                    <section class="lg:col-span-2 glass rounded-2xl p-6 shadow-xl lg:min-h-full lg:flex lg:flex-col lg:overflow-hidden" aria-labelledby="gallery-heading">
+                        <div class="flex justify-between items-center mb-4 gap-4 flex-wrap">
+                            <div class="border-b border-[var(--input-border)]">
+                                <nav id="gallery-tabs" class="-mb-px flex space-x-6" aria-label="Tabs">
+                                    <button id="history-tab" role="tab" aria-controls="gallery-content" aria-selected="true" class="gallery-tab active-tab">History</button>
+                                    <button id="collection-tab" role="tab" aria-controls="gallery-content" aria-selected="false" class="gallery-tab">My Collection</button>
+                                </nav>
+                            </div>
+                            <div id="gallery-actions" class="flex items-center gap-2">
+                                <input type="search" id="gallery-search" placeholder="Search prompts..." class="w-full max-w-[150px] md:max-w-xs bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-4 py-2 text-sm text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" aria-label="Search gallery by prompt">
+                                <button id="selection-mode-btn" class="flex-shrink-0 px-4 py-2 bg-[var(--input-background)] hover:bg-[var(--input-border)] rounded-lg transition text-sm">Select</button>
+                            </div>
+                        </div>
+                        <div id="selection-controls" class="hidden flex items-center gap-2 text-sm mb-4 bg-[var(--input-background)] p-2 rounded-lg">
+                            <span id="selection-count" class="text-gray-400 mr-auto font-medium">0 selected</span>
+                            <button id="select-all-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg transition">Select All</button>
+                            <button id="deselect-all-btn" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg transition">Deselect All</button>
+                            <button id="download-selected-btn" class="flex items-center gap-1.5 px-3 py-1 bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>Download</button>
+                            <button id="delete-selected-btn" class="flex items-center gap-1.5 px-3 py-1 bg-red-600/30 hover:bg-red-600/50 text-red-400 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>Delete</button>
+                        </div>
+
+                        <div id="gallery-content" class="lg:flex-1 lg:overflow-y-auto pr-2">
+                            <div id="empty-state" class="flex flex-col items-center justify-center h-96 text-gray-400">
+                                <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <p class="text-lg font-medium mb-2">No images yet</p>
+                                <p class="text-sm text-gray-500">Generate your first image to get started</p>
+                            </div>
+                            <div id="loading-state" class="hidden flex items-center justify-center h-96">
+                                <div class="text-center"><div class="loader w-16 h-16 mx-auto mb-4"></div><p class="text-gray-400">Generating images...</p></div>
+                            </div>
+                            <div id="gallery-grid" class="hidden grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+                        </div>
+                    </section>
+                    <div class="lg:col-span-1 hidden lg:block">
+                        <section class="glass rounded-2xl p-6 shadow-xl sticky top-8" aria-labelledby="summary-heading">
+                            <h2 id="summary-heading" class="text-xl font-semibold mb-6 flex items-center gap-2 text-[var(--cyan-accent)] font-['Libre_Baskerville',_serif]">Live Preview</h2>
+                            <div class="space-y-4 font-['Roboto_Mono',_monospace] text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Model:</span>
+                                    <span id="summary-model" class="font-medium text-right truncate">Not set</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Style:</span>
+                                    <span id="summary-style" class="font-medium text-right">None</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Aspect:</span>
+                                    <span id="summary-aspect" class="font-medium text-right">Square</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Steps:</span>
+                                    <span id="summary-steps" class="font-medium text-right">30</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">CFG:</span>
+                                    <span id="summary-cfg" class="font-medium text-right">7.5</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400">Variants:</span>
+                                    <span id="summary-variants" class="font-medium text-right">1</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Lightbox Modal -->
+        <div id="lightbox-modal" class="hidden fixed inset-0 z-[101] flex items-center justify-center p-4">
+            <div class="modal-backdrop absolute inset-0 bg-black/80"></div>
+            <div class="relative w-full h-full flex items-center justify-center">
+                <button id="lightbox-close-btn" class="absolute top-4 right-4 text-white p-2 rounded-full bg-black/50 hover:bg-black/80 transition" aria-label="Close image view">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <button id="lightbox-prev-btn" class="absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 rounded-full bg-black/50 hover:bg-black/80 transition disabled:opacity-20 disabled:cursor-not-allowed" aria-label="Previous image">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button id="lightbox-next-btn" class="absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 rounded-full bg-black/50 hover:bg-black/80 transition disabled:opacity-20 disabled:cursor-not-allowed" aria-label="Next image">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+                <img id="lightbox-image" src="" alt="Enlarged view of generated image" class="max-w-[90vw] max-h-[80vh] object-contain">
+                <div id="lightbox-info-bar" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl glass rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div class="text-xs text-gray-300 overflow-hidden">
+                        <p id="lightbox-prompt" class="truncate"></p>
+                        <p id="lightbox-params" class="text-gray-400"></p>
+                    </div>
+                    <button id="lightbox-redo-btn" class="flex-shrink-0 px-4 py-2 bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--background-color)] font-semibold rounded-lg transition">Redo (4)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="hidden fixed inset-0 z-[101] flex items-center justify-center p-4">
+            <div class="modal-backdrop absolute inset-0 bg-black/80"></div>
+            <div class="relative glass rounded-2xl p-6 shadow-xl z-10 max-w-lg w-full">
+                <button id="settings-close-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full bg-black/20 transition" aria-label="Close settings">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <h3 class="text-xl font-semibold mb-6 text-[var(--cyan-accent)] font-['Libre_Baskerville',_serif]">Settings</h3>
+                <div class="space-y-6">
+                    <form id="add-api-key-form" class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-300">Add New API Key</h4>
+                        <div>
+                            <label for="api-key-name-input" class="block text-sm font-medium text-gray-400 mb-1">Key Name</label>
+                            <input type="text" id="api-key-name-input" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" placeholder="e.g., Personal Key" required>
+                        </div>
+                        <div>
+                            <label for="api-key-value-input" class="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+                            <input type="password" id="api-key-value-input" class="w-full bg-[var(--input-background)] border border-[var(--input-border)] rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[var(--primary-color)] transition" placeholder="Enter your Venice AI key" required>
+                        </div>
+                        <button type="submit" id="api-key-add-btn" class="w-full bg-[var(--primary-color)] hover:bg-[var(--secondary-color)] text-[var(--background-color)] font-semibold py-2 px-4 rounded-lg transition">Add Key</button>
+                    </form>
+
+                    <hr class="border-t border-[var(--input-border)]/50">
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-300 mb-4">Saved Keys</h4>
+                        <div id="api-key-list-container" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                            <p class="text-sm text-gray-500">No custom keys saved. Using shared keys.</p>
+                            <!-- API Key items will be injected here -->
+                        </div>
+                    </div>
+                    
+                    <hr class="border-t border-[var(--input-border)]/50">
+                    
+                    <button id="change-user-btn" class="w-full py-2 px-4 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition">Change User</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Generic Modals -->
+        <div id="modal-container" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-backdrop absolute inset-0 bg-black/50"></div>
+            <div id="modal-content" class="relative bg-[var(--card-background)] rounded-lg p-6 z-10 max-w-lg w-full"></div>
+        </div>
+
+        <!-- Templates -->
+        <template id="gallery-item-template">
+            <div class="gallery-item relative aspect-square bg-gray-800 rounded-xl overflow-hidden group" tabindex="0" role="button" aria-haspopup="true">
+                <img class="w-full h-full object-cover" alt="Generated image" loading="lazy">
+                <div class="selection-overlay absolute inset-0 bg-black/40 border-4 border-[var(--primary-color)] rounded-xl pointer-events-none opacity-0 transition-opacity">
+                    <div class="absolute top-3 right-3 w-6 h-6 bg-[var(--primary-color)] rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                </div>
+                <div class="overlay absolute inset-0 p-4 flex flex-col justify-end">
+                    <p class="text-xs text-white/80 line-clamp-2 prompt-text"></p>
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                        <button type="button" class="view-btn col-span-2 py-2 px-3 bg-white/20 hover:bg-white/30 backdrop-blur rounded-lg text-xs font-medium transition" aria-label="View image">View</button>
+                        <button type="button" class="use-as-input-btn flex items-center justify-center gap-1 py-2 px-3 bg-purple-500/30 hover:bg-purple-500/50 backdrop-blur rounded-lg text-xs font-medium transition" aria-label="Use as image input">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M4 18v-5h5m10-4h5v5h-5M14 4h5v5h-5"></path></svg>
+                            <span>Input</span>
+                        </button>
+                        <div class="flex">
+                            <button type="button" class="favorite-btn flex-1 p-2 bg-white/20 hover:bg-white/30 backdrop-blur rounded-l-lg text-xs transition" aria-label="Favorite image">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                            </button>
+                            <button type="button" class="delete-btn flex-1 p-2 bg-red-500/30 hover:bg-red-500/50 backdrop-blur rounded-r-lg text-xs transition" aria-label="Delete image"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="api-key-item-template">
+            <div class="api-key-item flex items-center gap-3 p-2 bg-[var(--input-background)] rounded-lg">
+                <input type="radio" name="active-api-key" class="w-4 h-4 text-[var(--primary-color)] focus:ring-[var(--primary-color)] bg-transparent border-[var(--input-border)]">
+                <div class="flex-1">
+                    <p class="font-semibold text-sm text-gray-200"></p>
+                    <p class="font-mono text-xs text-gray-400"></p>
+                </div>
+                <button class="delete-api-key-btn p-1.5 text-red-400 hover:bg-red-500/20 rounded-full transition" aria-label="Delete API Key">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        </template>
+    </div>
+    
+    <script type="module" src="index.tsx"></script>
+</body>
+</html>
