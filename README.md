@@ -1,20 +1,22 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# FayeBlade
 
-# Run and deploy your AI Studio app
+FayeBlade is a local-first Swift application for iOS that provides a secure and private environment for chat and image management.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1T_pjQGOnZ8XA9vw666s_vrWgP8YcTtD1
+*   **Local-First:** All data is stored exclusively on your device. Nothing is saved online.
+*   **Secure Login:** The app features a login screen to protect your content.
+*   **Developer Mode:** A password-protected developer mode allows for advanced configuration and content filter management.
 
-## Run Locally
+## Project Structure
 
-**Prerequisites:**  Node.js
+The project is built with SwiftUI and follows a standard MVVM (Model-View-ViewModel) architecture.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+*   `FayeBlade/`: The main application module.
+    *   `FayeBladeApp.swift`: The entry point of the application.
+    *   `Views/`: Contains all the SwiftUI views.
+        *   `LoginView.swift`: The main login screen.
+        *   `ContentView.swift`: The main content screen after login.
+        *   `SettingsView.swift`: The settings screen with the dev mode toggle.
+    *   `ViewModels/`: Contains the view models that manage the state and logic for the views.
+    *   `Models/`: Contains the data models for the application.
