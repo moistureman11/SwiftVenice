@@ -9,13 +9,11 @@ class NetworkManager {
     }
 
     private static func loadApiKey() -> String {
-        guard let path = Bundle.main.path(forResource: "ApiKeys", ofType: "plist"),
-              let xml = FileManager.default.contents(atPath: path),
-              let keys = try? PropertyListSerialization.propertyList(from: xml, options: .mutableContainersAndLeaves, format: nil) as? [String: Any],
-              let apiKey = keys["VeniceAPIKey"] as? String else {
-            fatalError("Unable to find or read ApiKeys.plist. Please make sure the file exists and contains the VeniceAPIKey.")
+        if let apiKey = ProcessInfo.processInfo.environment["VENICE_API_KEY"], !apiKey.isEmpty {
+            return apiKey
+        } else {
+            fatalError("VENICE_API_KEY environment variable not set. Please set the API key in your environment variables.")
         }
-        return apiKey
     }
 
     func getChatCompletion(request: ChatRequest, completion: @escaping (Result<ChatResponse, Error>) -> Void) {
