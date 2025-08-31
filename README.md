@@ -12,7 +12,7 @@ FayeBlade is a local-first Swift application for iOS that provides a secure and 
 - **Image Enhancement:** Upscale and enhance generated images
 
 ### Developer Features
-- **Developer Mode:** A password-protected developer mode (password: `262854`) allows for advanced configuration and content filter management.
+- **Developer Mode:** A password-protected developer mode allows for advanced configuration and content filter management. The password can be configured in the app settings.
 - **CSAM Filter Testing:** When dev mode is enabled, safe mode is disabled for testing new LORA models and content filters.
 
 ### New Innovative Features
@@ -54,7 +54,7 @@ The app automatically manages safe mode settings based on developer mode status:
 - All user credentials are stored securely in the iOS Keychain
 - API keys are managed through environment variables
 - Local data persistence using SwiftData ensures privacy
-- Developer mode is password-protected (default: `262854`)
+- Developer mode is password-protected.
 
 ## Built With
 
