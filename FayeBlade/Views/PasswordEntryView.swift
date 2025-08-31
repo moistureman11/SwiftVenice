@@ -31,7 +31,7 @@ struct PasswordEntryView: View {
     /// Checks if a valid developer mode password is configured
     private var isPasswordConfigured: Bool {
         let password = UserDefaults.standard.string(forKey: "devModePassword")
-        return password != nil && !password!.isEmpty
+        return password?.isEmpty == false
     }
 
     var body: some View {
