@@ -1,6 +1,9 @@
 # FayeBlade
+<img width="1536" height="1024" alt="Image" src="https://github.com/user-attachments/assets/ddda9e52-ecf7-49ef-addd-26bd8f1916ed" />
 
-FayeBlade is a local-first Swift application for iOS that provides a secure and private environment for AI-powered chat and image generation. Built by **Faye Håkansdotter** and powered by **[Venice.ai](https://venice.ai)**.
+
+This macOS/ iOS project is a local-first Swift application for an easy deployment of venice api usage that provides a secure and private environment for AI-powered chat and image generation. 
+Built by **Faye Håkansdotter** and powered by **[Venice.ai](https://venice.ai)**.
 
 ## Features
 
@@ -13,7 +16,6 @@ FayeBlade is a local-first Swift application for iOS that provides a secure and 
 
 ### Developer Features
 - **Developer Mode:** A password-protected developer mode allows for advanced configuration and content filter management. The password can be configured in the app settings.
-- **CSAM Filter Testing:** When dev mode is enabled, safe mode is disabled for testing new LORA models and content filters.
 
 ### New Innovative Features
 - **🎨 Prompt Templates:** Access a curated library of professional prompt templates across categories like Photography, Art, Sci-Fi, Fantasy, and more. Create and save your own custom templates.
@@ -47,7 +49,6 @@ FayeBlade integrates with Venice.ai's API to provide:
 
 The app automatically manages safe mode settings based on developer mode status:
 - **Normal Mode**: Safe mode enabled for content filtering
-- **Developer Mode**: Safe mode disabled for CSAM filter testing and LORA model experimentation
 
 ## Security
 
@@ -65,4 +66,4 @@ The app automatically manages safe mode settings based on developer mode status:
 
 ---
 
-*FayeBlade is built by Faye Håkansdotter and powered by Venice.ai*
+*Built by Faye Håkansdotter and powered by Venice.ai*
