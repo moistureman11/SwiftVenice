@@ -6,7 +6,9 @@ struct SettingsView: View {
     // State for the dev mode password alert
     @State private var showingPasswordAlert = false
     @State private var passwordInput = ""
-    private let devModePassword = "262854"
+    private var devModePassword: String {
+        UserDefaults.standard.string(forKey: "devModePassword") ?? "262854"
+    }
 
     let aspectRatios = ["1:1", "3:4", "4:3", "16:9"]
 
